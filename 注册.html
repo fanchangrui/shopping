@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>注册页面</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+
+    <style>
+        h2 {
+            font-size: 30px;
+        }
+    </style>
+
+</head>
+<body>
+    <el-container id="app" style="height: 700px;background-color: deepskyblue;">
+        <el-main>
+            <el-row>
+                <el-col :span="12" offset="6">
+                    <el-card class="box-card" style="height: 600px; ">
+                        <el-form :model="user" label-width="auto">
+                            <el-form-item style="text-align: center;">
+                                <h2>注册</h2>
+                            </el-form-item>
+                            <el-form-item label="用户账号">
+                                <el-input v-model="user.userName"
+                                          placeholder="请输入用户名"></el-input>
+                            </el-form-item>
+                        </el-form>
+                        <el-form :model="user" label-width="auto">
+                            <el-form-item label="用户密码">
+                                <el-input v-model="user.email"
+                                          placeholder="请输入密码"></el-input>
+                            </el-form-item>
+                            <el-form-item label="用户性别">
+                                <el-radio v-model="user.radio" label="1" border>男</el-radio>
+                                <el-radio v-model="user.radio" label="2" border>女</el-radio>
+                            </el-form-item>
+
+                            <el-form-item label="所在城市">
+                                <el-select v-model="user.city" placeholder="上海">
+                                    <el-option label="上海" value="shanghai"></el-option>
+                                    <el-option label="北京" value="beijing"></el-option>
+                                    <el-option label="广州" value="guangzhou"></el-option>
+                                    <el-option label="深圳" value="shenzhen"></el-option>
+                                    <el-option label="杭州" value="hangzhou"></el-option>
+                                    <el-option label="宁波" value="ningbo"></el-option>
+                                  </el-select>
+                            </el-form-item>
+                            <el-form-item label="用户生日">
+                                <el-date-picker v-model="user.birthday"
+                                                align="right"
+                                                type="date"
+                                                placeholder="选择生日日期"
+                                                :picker-options="pickerOptions">
+                                </el-date-picker>
+                            </el-form-item>
+                            <el-form-item label="兴趣爱好">
+                                <el-checkbox-group v-model="user.checkList">
+                                    <el-checkbox label="唱"></el-checkbox>
+                                    <el-checkbox label="跳"></el-checkbox>
+                                    <el-checkbox label="rap"></el-checkbox>
+                                    <el-checkbox label="打篮球"></el-checkbox>
+                                    <el-checkbox label="吹牛"></el-checkbox>
+                                    <el-checkbox label="吃饭"></el-checkbox>
+                                    <el-checkbox label="睡觉"></el-checkbox>
+                                </el-checkbox-group>
+                            </el-form-item>
+                            <el-form-item style="text-align: center;">
+                                <el-button type="primary"
+                                           round>注册</el-button>
+                                <el-button type="danger"
+                                           round>取消</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                // 用于绑定数据
+                user: {
+                    userName: "",
+                    password: "",
+                    
+                },
+            },
+        })
+    </script>
+</body>
+</html>
+
