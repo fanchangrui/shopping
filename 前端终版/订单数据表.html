@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>产品数据表</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          rel="stylesheet" />
+</head>
+<body style="margin: 0;">
+    <el-container id="app">
+        <el-main>
+            <el-row>
+                <el-col>
+                    <el-table :border="true"
+                              :data="orders"
+                              style="width: 100%">
+                        <el-table-column align="center"
+                                         header-align="center"
+                                         label="操作">
+                            <template slot-scope="scope">
+                                <el-button size="mini"
+                                           type="danger"
+                                           v-on:click="onEditButtonClick(scope.row.id)">
+                                    编辑
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column type="expand">
+                            <template slot-scope="props">
+                                <el-form label-position="left">
+                                    <el-form-item label="总金额：">
+                                        <span>{{props.row.totalMoney}}</span>
+                                    </el-form-item>
+                                    <el-form-item label="联系电话：">
+                                        <span>{{props.row.userphone}}</span>
+                                    </el-form-item>
+                                    <el-form-item label="配送地址：">
+                                        <span>{{props.row.useraddress}}</span>
+                                    </el-form-item>
+                                </el-form>
+                            </template>
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="订单编号"
+                                         prop="orderNumber">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="订单状态"
+                                         prop="orderState">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="菜品名称"
+                                         prop="productName">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="数量"
+                                         prop="number">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="下单时间"
+                                         prop="ordertime">
+                        </el-table-column>
+                        <el-table-column :sortable="true"
+                                         header-align="center"
+                                         label="收货人"
+                                         prop="userName">
+                        </el-table-column>
+                    </el-table>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                //用于订单的信息的记录
+                orders: []
+            },
+            methods: {
+                async onEditButtonClick(id) {
+                    window.location.href = "/Product/EditOrder/" + id;
+                },
+                //所有订单的数据
+                async GetAllOrders() {
+                    // 获取所有订单数据
+                    let response = await axios.get('/User/GetAllOders');
+                    if (response.data.code === 'success') {
+                        this.orders = response.data.data;
+                    } else {
+                        this.$message({
+                            message: '记录获取失败',
+                            type: 'error'
+                        });
+                    }
+                },
+                //用于界面的安全防止非管理员直接用URl
+                async LoginAndAdmin() {
+
+                    //用于判断用户有没有登录并且时不时管理员
+                    let response = await axios.get('/User/LoginAndAdmin');
+                    if (response.data.code === 'success') {
+
+                    } else if (response.data.code === 'NoAdmin') {
+                        this.$confirm('您不是管理员',
+                            '提示',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            })
+                            .then(async () => {
+                                //返回用户前台
+                                window.location.href = "/User/Index";
+                                //await this.deleteProduct(id);
+                            })
+                            .catch(() => {
+                                //返回用户前台
+                                window.location.href = "/User/Index";
+                            });
+                    }
+                    else {
+                        this.$confirm('您还未登录',
+                            '提示',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            })
+                            .then(async () => {
+                                //返回用户前台
+                                window.location.href = "/User/Index";
+                                //await this.deleteProduct(id);
+                            })
+                            .catch(() => {
+                                //返回用户前台
+                                window.location.href = "/User/Index";
+                            });
+                    }
+                }
+            },
+            mounted() {
+                this.GetAllOrders();
+                //用于防止非法用户直接用URL
+                this.LoginAndAdmin();
+            }
+        });
+    </script>
+</body>
+
+</html>

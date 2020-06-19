@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>提交订单页面</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          rel="stylesheet" />
+</head>
+<body style="margin: 0;">
+    <el-container id="app" style="height:100%; background-color: rgb(0, 183, 255);">
+        <el-main>
+            <el-row>
+                <el-col :span="12" offset="6">
+                    <el-card class="box-card" style="height: 700px;">
+                        <el-form :model="product"
+                                 label-width="auto"
+                                 ref="form">
+                            <el-row>
+                                <el-col>
+                                    <el-form-item label="产品序号">
+                                        <el-input :disabled="true"
+                                                  v-model="product.productNumber">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item label="产品名称">
+                                        <el-input :disabled="true"
+                                                  v-model="product.productName">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item label="产品类型">
+                                        <el-input :disabled="true"
+                                                  v-model="product.productType">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item label="价格">
+                                        <el-input :disabled="true"
+                                                  v-model="product.price">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item label="库存数">
+                                        <el-input :disabled="true"
+                                                  v-model="product.inventory">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item label="图片">
+                                        <el-image :src="'/upload/' + product.imgUrl"
+                                                  fit="contain"
+                                                  style="height: 200px;">
+                                            <div slot="error">
+                                                <i class="el-icon-picture-outline"></i>
+                                            </div>
+                                        </el-image>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item :rules="[{ required: true, message: '请输入数量', trigger: 'blur' },{required: true,pattern:/^\+?[1-9][0-9]*$/,message: '只能输入大于零的整数',trigger: 'blur'}]" label="数量" prop="buyNum">
+                                        <el-input placeholder="请输入数量"
+                                                  v-model="product.buyNum" onKeypress="return (/[\d]/.test(String.fromCharCode(event.keyCode)))">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col style="text-align: center;">
+                                    <el-form-item>
+                                        <el-button type="primary"
+                                                   v-on:click="onOKButtonClick">
+                                            提交订单
+                                        </el-button>
+                                        <el-button v-on:click="onBackButtonClick">返回</el-button>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            product: {}
+        },
+        methods: {
+            //提交订单
+            async onOKButtonClick() {
+
+                //this.updateProduct();
+            },
+            //返回浏览首页
+            onBackButtonClick() {
+                window.location.href = "/User/Index";
+            },
+            async getProductById(id) {
+                let response = await axios.get('/Product/GetProductById', { params: { id: id } });
+
+                if (response.data.code === 'success') {
+                    this.product = response.data.data;
+
+                    //将数值类型的价格转化为字符串类型以便于展示数据对应的是ProductVO
+                    this.product.price = this.product.price.toString();
+                    this.product.inventory = this.product.inventory.toString();
+                    this.product.id = id;
+                }
+            },
+            //跟新（插入新的）订单
+            async onOKButtonClick() {
+                this.updateOrder();
+            },
+            async updateOrder() {
+
+                let response = await axios.post('/User/updateOrder', this.product);
+
+                if (response.data.code === 'success') {
+                    this.$message({
+                        message: '提交成功',
+                        type: 'success'
+                    });
+                    this.onBackButtonClick();
+                } else if (response.data.code === 'NoLogin') {
+                    this.$message({
+                        message: '还没有登录',
+                        type: 'error'
+                    });
+
+                }
+                else if (response.data.code === 'noBuyNum') {
+                    this.$message({
+                        message: '下单数量必须大于零！！',
+                        type: 'error'
+                    });
+                }
+                else if (response.data.code === 'isAdmin') {
+                    this.$message({
+                        message: '管理员不可以下单哦！！',
+                        type: 'error'
+                    });
+                } else if (response.data.code === 'Lack') {
+                    this.$message({
+                        message: '亲,库存不够了',
+                        type: 'error'
+                    });
+                }
+                else {
+                    this.$message({
+                        message: '提交失败',
+                        type: 'error'
+                    });
+                }
+            },
+            //用于界面的安全防止非管理员直接用URl
+            async LoginAndAdmin() {
+
+                //用于判断用户有没有登录并且时不时管理员
+                let response = await axios.get('/User/LoginAndAdmin');
+                if (response.data.code === 'success' || response.data.code === 'NoAdmin') {
+
+                } else {
+                    this.$confirm('您还未登录',
+                        '提示',
+                        {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        })
+                        .then(async () => {
+                            //返回用户前台
+                            window.location.href = "/User/Index";
+                            //await this.deleteProduct(id);
+                        })
+                        .catch(() => {
+                            //返回用户前台
+                            window.location.href = "/User/Index";
+                        });
+                }
+            }
+        },
+        mounted() {
+           // this.getProductById(@ViewBag.id);
+            //用于防止非法用户直接用URL
+            this.LoginAndAdmin();
+        }
+    });
+    </script>
+</body>
+
+</html>

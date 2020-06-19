@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>用户首页</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          rel="stylesheet" />
+</head>
+<body style="margin: 0;">
+    <el-container id="app" style="background-color: rgb(0, 195, 255);">
+        <el-main>
+            <el-row>
+                <el-col :span="22"
+                        style="padding: 10px;">
+                    <el-button type="primary"
+                               icon="el-icon-upload"
+                               v-on:click="onLoginUserButtonClick">
+                        点击登录
+                    </el-button>
+                    <el-button type="danger"
+                               icon="el-icon-upload"
+                               v-on:click="onLoginOUTButtonClick">
+                        退出登录
+                    </el-button>
+                    <el-button type="info"
+                               icon="el-icon-upload"
+                               v-on:click="onLookMyOederButtonClick">
+                        查看订单
+                    </el-button>
+                    <el-button type="info"
+                               icon="el-icon-edit" circle
+                               v-on:click="onEditUserButtonClick">
+                        修改
+                    </el-button>
+                    <el-tag :key="Userlabel"
+                            :type="danger"
+                            effect="plain">
+                        {{ Userlabel }}
+                    </el-tag>
+                </el-col>
+                <el-col :span="2"
+                        style="padding: 10px;">
+                    <el-button type="warning"
+                               v-on:click="onBackstageButtonClick">
+                        后台管理
+                    </el-button>
+                </el-col>
+                <el-col :span="24">
+                    <el-menu :default-active="'全部'"
+                             mode="horizontal"
+                             v-on:select="onMenuItemSelect">
+                        <el-menu-item :index="category"
+                                      :key="category"
+                                      v-for="(category, index) in categories">
+                            {{category}}
+                        </el-menu-item>
+                    </el-menu>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="4"
+                        style="padding: 10px;">
+                    <el-button v-bind:icon="order === 'asc' ? 'el-icon-caret-top' : 'el-icon-caret-bottom'"
+                               v-on:click="onOrderButtonClick">
+                        按产品价格{{order==='asc' ? '升' : '降'}}序
+                    </el-button>
+                </el-col>
+                <el-col :span="10"
+                        style="padding: 10px;">
+                    <el-input :clearable="true"
+                              :span="16"
+                              placeholder="请输入关键字"
+                              v-model="keyword">
+                        <el-button icon="el-icon-search"
+                                   slot="append"
+                                   v-on:click="onSearchButtonClick">
+                            搜索
+                        </el-button>
+                    </el-input>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :key="product.id"
+                        :span="8"
+                        style="padding: 10px;"
+                        v-for="product in products">
+                    <el-card class="box-card" style="height: 500px;">
+                        <div slot="header">
+                            <span>{{product.productName}}</span>
+                        </div>
+                        <el-image :src="'/upload/' + product.imgUrl"
+                                  fit="contain"
+                                  style="height: 200px;">
+                            <div slot="error">
+                                <i class="el-icon-picture-outline"></i>
+                            </div>
+                        </el-image>
+
+                        <ul>产品序号：{{product.productNumber}}</ul>
+                        <ul>产品类型：{{product.productType}}</ul>
+                        <ul>产品价格：{{product.price}}</ul>
+                        <ul>产品库存：{{product.inventory}}份</ul>
+                        <div style="text-align: right; border-top: #eeeeee solid 1px; padding-top: 20px; padding-bottom: 0">
+                            <el-button icon="el-icon-edit"
+                                       plain
+                                       size="mini"
+                                       v-on:click="onBuyButtonClick(product.id)">
+                                点击购买
+                            </el-button>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                // 获取到的所有产品数据放在这里（用于界面元素的绑定）
+                Userlabel: '已经登录',
+                products: [],
+                keyword: '',
+                order: 'asc',
+                categories: ['全部', '荤菜', '素菜', '甜品', '饮料']
+            },
+            methods: {
+                async GetAllProducts(order) {
+                    // 获取所有产品数据
+                    let response = await axios.get('/Product/GetAll', { params: { order: order } });
+                    if (response.data.code === 'success') {
+                        this.products = response.data.data;
+                        this.updateProduct();
+                    } else {
+                        this.$message({
+                            message: '记录获取失败',
+                            type: 'error'
+                        });
+                    }
+                },
+                //点击编辑个人信息
+                async onEditUserButtonClick() {
+
+                    let response = await axios.get('/User/LoginYes_or_No');
+
+                    if (response.data.code === 'YES') {
+                        //跳转进入编辑
+                        window.location.href = "/User/EditUser";
+                    } else {
+                        this.$message({
+                            message: '您还未登录',
+                            type: 'error'
+                        });
+                    }
+                },
+                //进入后台
+                async onBackstageButtonClick() {
+                    //用于判断用户有没有登录并且时不时管理员
+                    let response = await axios.get('/User/LoginAndAdmin');
+                    if (response.data.code === 'success') {
+                        //跳转进入后台
+                        window.location.href = "/Product/Index";
+                    } else if (response.data.code === 'NoAdmin') {
+                        this.$message({
+                            message: '您不是管理员',
+                            type: 'error'
+                        });
+                    }
+                    else {
+                        this.$message({
+                            message: '您还未登录',
+                            type: 'error'
+                        });
+                    }
+
+                },
+                onAddButtonClick() {
+                    window.location.href = "/Product/Create";
+                },
+                // 点击登录
+                onLoginUserButtonClick() {
+                    window.location.href = "/User/Login";
+                },
+                async onSearchButtonClick() {
+                    if (this.keyword === '') {
+                        this.GetAllProducts(this.order);
+                    } else {
+                        this.GetAllProductsByKeyword(this.keyword);
+                    }
+                },
+                async GetAllProductsByKeyword(keyword) {
+                    // 获取所有产品数据
+                    let response = await axios.get('/Product/GetProductsByKeyword', { params: { keyword: keyword } });
+
+                    if (response.data.code === 'success') {
+                        this.products = response.data.data;
+                    }
+                },
+                //这是加入购物车
+                onBuyButtonClick(id) {
+                    this.$confirm('确认该要购买该产品？',
+                        '提示',
+                        {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        })
+                        .then(async () => {
+                            await this.AddShowCarProduct(id);
+                        })
+                        .catch(() => { });
+                },
+                AddShowCarProduct(id) {
+                    //跳转到结算页面
+                    window.location.href = "/User/ShowCar/" + id;
+                },
+                
+                onOrderButtonClick() {
+                    if (this.order === 'asc') {
+                        this.order = 'desc';
+                    } else {
+                        this.order = 'asc';
+                    }
+
+                    this.GetAllProducts(this.order);
+                },
+                async GetAllProductsByCategory(category) {
+                    // 获取所有产品数据
+                    let response = await axios.get('/Product/GetProductsByCategory', { params: { category: category } });
+
+                    if (response.data.code === 'success') {
+                        this.products = response.data.data;
+                    }
+                },
+                onMenuItemSelect(index) {
+                    if (index === '全部') {
+                        this.GetAllProducts(this.order);
+                    } else {
+                        this.GetAllProductsByCategory(index);
+                    }
+                },
+                //退出登录onLoginOUTButtonClick
+                async onLoginOUTButtonClick() {
+                    let response = await axios.get('/User/LogonOut');
+
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'success',
+                            message: '成功退出登录'
+                        });
+                        //重新定位到首页
+                        window.location.href = "/User/Index";
+                    } else if (response.data.code === 'null') {
+                        this.$message({
+                            message: '您还未登陆',
+                            type: 'error'
+                        });
+                    } else {
+                        this.$message({
+                            message: '退出失败',
+                            type: 'error'
+                        });
+                    }
+                },
+                //
+                async LoginAndAdmin() {
+
+                    //用于判断用户有没有登录并且时不时管理员
+                    let response = await axios.get('/User/LoginAndAdmin');
+                    if (response.data.code === 'success') {
+                        this.Userlabel = '欢迎店主' + data;
+                    } else if (response.data.code === 'NoAdmin') {
+                        this.Userlabel = '欢迎' + data + '光临小店'
+                    }
+                    else {
+                        this.Userlabel = '您好,欢迎登录哦!!'
+                    }
+                },
+                async onLookMyOederButtonClick() {
+                    //用户判断是否已经登录是否是管理员身份
+                    let response = await axios.get('/User/LoginAndAdmin');
+                    //success表示已登录是管理员
+                    //NoAdmin表示已登录不是管理员
+                    //NoLogin表示未登录
+                    if (response.data.code === 'success') {
+                        this.$message({
+                            type: 'error',
+                            message: '管理员要在后台查看订单'
+                        });
+                    } else if (response.data.code === 'NoAdmin') {
+                        this.$message({
+                            message: '成功跳转',
+                            type: 'success'
+                        });
+                        window.location.href = "/User/Orderlist";
+                    } else {
+                        this.$message({
+                            message: '您还未登陆无法看订单',
+                            type: 'error'
+                        });
+                    }
+                }
+
+
+            },
+            mounted() {
+                this.GetAllProducts(this.order);
+                //这里是显示登陆状态
+                this.LoginAndAdmin();
+            }
+        });
+    </script>
+</body>
+
+</html>

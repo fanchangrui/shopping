@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>注册页面</title>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" rel="stylesheet" />
+</head>
+
+<body style="margin: 0;">
+    <el-container id="app" style="height: 800px; background-color: rgb(0, 183, 255);">
+        <el-main>
+            <el-row>
+                <el-col :span="12" offset="6">
+                    <el-card class="box-card" style="height: 500px;">
+                        <el-form :model="user" label-width="auto">
+                            <el-form-item style="text-align: center;">
+                                <h2>注册</h2>
+                            </el-form-item>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item :rules="[{ required: true, message: '请输入账号', trigger: 'blur' }]" label="用户名" prop="userName">
+                                        <el-input placeholder="请输入用户名" v-model="user.userName">
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col>
+                                    <el-form-item :rules="[{ required: true, message: '请输入密码(6-20位)', trigger: 'blur' },{required: true,pattern: /^(\w){6,20}$/,message: '只能输入6-20个字母、数字、下划线',trigger: 'blur'}]" label="密码" prop="password">
+                                        <el-input placeholder="请输入密码" v-model="user.userPassword" show-password>
+                                        </el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-form-item :rules="[{ required: true, message: '请输入电话号码(11位)', trigger: 'blur' }, { required: true, pattern: /^((13|14|15|16|17|18)[0-9]{1}\d{8})|((166|199|198)[0-9]{1}\d{7})$/, message: '请输入正确的电话号码', trigger: 'blur' }]" label="手机" prop="phonenumber">
+                                <el-input placeholder="请输入手机号" v-model="user.phonenumber">
+                                    <template slot="prepend">
+                                        +86
+                                    </template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item :rules="[{ required: true, message: '请输入地址', trigger: 'blur' }]" label="地址" prop="adress">
+                                <el-input placeholder="请输入地址" v-model="user.address">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item style="text-align: center;">
+                                <el-button plain type="danger" round v-on:click="onRegisterButtonClick">注册</el-button>
+                                <el-button plain type="primary" round v-on:click="onBackButtonClick">返回</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.19.2/axios.js"></script>
+    <script>
+        const app = new Vue({
+            el: "#app",
+
+            data: {
+                // 用于绑定数据
+                user: {
+                    userName: '',
+                    userPassword: '',
+                    phonenumber: '',
+                    address: '',
+                },
+            },
+            methods: {
+                onBackButtonClick() {
+                    window.location.href = "/User/Login";
+                },
+                async onRegisterButtonClick() {
+                      const response = await axios.post('/User/CreateUser', this.user);
+
+                      if (response.data.code === 'success') {
+                      this.$message({
+                           message: '注册成功',
+                           type: 'success'
+                      });
+                      //注册成功返回登录页面
+                      this.onBackButtonClick();
+                      } else if (response.data.code === 'repetition') {
+                      this.$message({
+                          message: '用户名重复了',
+                           type: 'error'
+                       });
+                      }else {
+                           this.$message({
+                           message: '注册失败',
+                           type: 'error'
+                       });
+                      }
+                }
+
+
+            },
+            mounted() {
+                // this.GetAllProducts(this.order);
+            }
+        });
+    </script>
+</body>
+
+</html>
